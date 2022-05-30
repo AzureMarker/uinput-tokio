@@ -1,4 +1,5 @@
 use crate::event::{self, Code, Kind};
+use crate::Error;
 use ffi::*;
 use libc::c_int;
 use libc::{gettimeofday, timeval};
@@ -17,12 +18,7 @@ impl Device {
     }
 
     #[doc(hidden)]
-    pub async fn write(
-        &mut self,
-        kind: c_int,
-        code: c_int,
-        value: c_int,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn write(&mut self, kind: c_int, code: c_int, value: c_int) -> Result<(), Error> {
         unsafe {
             let mut event = input_event {
                 time: timeval {
@@ -47,33 +43,23 @@ impl Device {
     }
 
     /// Synchronize the device.
-    pub async fn synchronize(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn synchronize(&mut self) -> Result<(), Error> {
         self.write(EV_SYN, SYN_REPORT, 0).await
     }
 
     /// Send an event.
-    pub async fn send<T: Into<event::Event>>(
-        &mut self,
-        event: T,
-        value: i32,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn send<T: Into<event::Event>>(&mut self, event: T, value: i32) -> Result<(), Error> {
         let event = event.into();
         self.write(event.kind(), event.code(), value).await
     }
 
     /// Send a press event.
-    pub async fn press<T: event::Press>(
-        &mut self,
-        event: &T,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn press<T: event::Press>(&mut self, event: &T) -> Result<(), Error> {
         self.write(event.kind(), event.code(), 1).await
     }
 
     /// Send a release event.
-    pub async fn release<T: event::Release>(
-        &mut self,
-        event: &T,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn release<T: event::Release>(&mut self, event: &T) -> Result<(), Error> {
         self.write(event.kind(), event.code(), 0).await
     }
 
@@ -81,7 +67,7 @@ impl Device {
     pub async fn click<T: event::Press + event::Release>(
         &mut self,
         event: &T,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         self.press(event).await?;
         self.release(event).await?;
 
@@ -93,7 +79,7 @@ impl Device {
         &mut self,
         event: &T,
         value: i32,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         self.write(event.kind(), event.code(), value).await
     }
 }

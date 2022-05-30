@@ -104,7 +104,7 @@ impl Builder {
     }
 
     /// Enable the given event.
-    pub fn event<T: Into<Event>>(mut self, value: T) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn event<T: Into<Event>>(mut self, value: T) -> Result<Self, UInputError> {
         self.abs = None;
 
         match value.into() {
@@ -270,7 +270,7 @@ impl Builder {
     }
 
     /// Create the defined device.
-    pub async fn create(self) -> Result<Device, Box<dyn std::error::Error>> {
+    pub async fn create(self) -> Result<Device, UInputError> {
         let fd = self.file.as_raw_fd();
         unsafe {
             let ptr = &self.def as *const _ as *const u8;

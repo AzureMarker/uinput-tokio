@@ -34,6 +34,12 @@ impl From<nix::Error> for Error {
     }
 }
 
+impl From<std::io::Error> for Error {
+    fn from(value: std::io::Error) -> Self {
+        Error::IoError(value)
+    }
+}
+
 #[cfg(feature = "udev")]
 impl From<udev::Error> for Error {
     fn from(value: udev::Error) -> Self {
