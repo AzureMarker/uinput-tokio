@@ -270,7 +270,7 @@ impl Builder {
     }
 
     /// Create the defined device.
-    pub async fn create(self) -> Result<Device, UInputError> {
+    pub fn create(self) -> Result<Device, UInputError> {
         let fd = self.file.as_raw_fd();
         unsafe {
             let ptr = &self.def as *const _ as *const u8;
