@@ -1,9 +1,6 @@
-use nix;
 use std::ffi;
 use std::fmt;
-
-#[cfg(feature = "udev")]
-use udev;
+use std::fmt::{Debug, Display};
 
 /// UInput error.
 #[derive(Debug)]
@@ -44,25 +41,21 @@ impl From<udev::Error> for Error {
     }
 }
 
-impl fmt::Display for Error {
+impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        f.write_str(&self.to_string())
+        match self {
+            Error::Nix(err) => Display::fmt(err, f),
+
+            Error::Nul(err) => Display::fmt(err, f),
+
+            #[cfg(feature = "udev")]
+            Error::Udev(err) => Display::fmt(err, f),
+
+            Error::IoError(err) => Display::fmt(err, f),
+
+            Error::NotFound => f.write_str("Device not found."),
+        }
     }
 }
 
-// impl error::Error for Error {
-//     fn description(&self) -> &str {
-//         return match self {
-//             Error::Nix(ref err) => &err.to_string(),
-
-//             Error::Nul(ref err) => &err.to_string(),
-
-//             #[cfg(feature = "udev")]
-//             Error::Udev(ref err) => &err.to_string(),
-
-//             Error::IoError(ref err) => &err.to_string(),
-
-//             Error::NotFound => "Device not found.",
-//         };
-//     }
-// }
+impl std::error::Error for Error {}
